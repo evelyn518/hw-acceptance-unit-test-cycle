@@ -1,26 +1,7 @@
 require 'rails_helper'
 
-describe Movie do
-    it 'should find movies with the same director' do
-        movie1 = Movie.create(title: 'Test1', director: 'Director 1')
-        movie2 = Movie.create(title: 'Test2', director: 'Director 1')
-        results = Movie.similar_movies(movie1.id)
-        expect(results).to eq([movie1, movie2])
-    end
 
-    it 'should return nil when no director present ' do
-        movie1 = Movie.create(title: 'Test 1')
-        results = Movie.similar_movies(movie1.id)
-        expect(results).to eq(nil)
-    end
-end
 
-describe "#all_ratings" do 
-    it 'should return array ["G", "PG", "PG-13", "NC-17", "R"]' do
-      Movie.stub(:all_ratings).and_return(["G", "PG", "PG-13", "NC-17", "R"]) 
-      expect(Movie.all_ratings).to eq(["G", "PG", "PG-13", "NC-17", "R"])
-    end
-end
 RSpec.describe MoviesController, :type => :controller do
 
 
@@ -28,33 +9,38 @@ RSpec.describe MoviesController, :type => :controller do
    describe 'UPDATE DIRECTOR' do
 
      it 'should call update_attributes and redirect' do
-       mov1 = double("Movie", :title => 'Hunger Games', :director => 'Nora', :release_date => '1977-05-25', :rating => 'R', :description => 'test')
+       mov1 = double("Movie", :title => 'tenant', :director => 'Nolan', :release_date => '2020-09-03', :rating => 'PG13', :description => 'test')
        allow(Movie).to receive(:find).with('21').and_return(mov1)
        expect(mov1).to receive(:update_attributes!).and_return(true)
-       put :update, {:id => '21', :movie => {:title => 'Hunger Games', :director => 'Nora', :release_date => '1977-05-25', :rating => 'R', :description => 'test'}}
+       put :update, {:id => '21', :movie => {:title => 'tenant', :director => 'aa', :release_date => '2020-09-03', :rating => 'PG13', :description => 'test'}}
        #put :update, {:id => 21, :movie => mov1}
        expect(response).to redirect_to(movie_path(mov1))
+       expect(mov1.director == 'aa')
      end
    end
 
-   describe 'HOMEPAGE' do
-     it 'render HOMEPAGE' do
-       get :index
-       expect(response).to render_template('index')
-     end
-   end
 
-   describe 'CREATE/DELETE' do
-     it 'DELETE' do
-       movie2 = double('Movie', :title => 'Hunger Games 2', :director => 'Nora', :id => '21')
-       allow(Movie).to receive(:find).with('23').and_return(movie2)
-       expect(movie2).to receive(:destroy)
-       delete :destroy, {:id => '23'}
-     end
-     it 'CREATE' do
-       new_movie = double('Movie', :title => 'Hunger Games', :director => 'Nora', :release_date => '1977-05-25', :rating => 'R', :description => 'test')
-       allow(Movie).to receive(:create!).and_return(new_movie)
-       post :create, {:id => '21', :movie => {:title => 'Hunger Games', :director => 'Nora', :release_date => '1977-05-25', :rating => 'R', :description => 'test'}}
-     end
+   describe 'WHEN DOCUMENT HAS A DIRECTOR' do
+     it 'find similar_movies' do
+       movie2 = double('Movie', :title => 'Test2', :director => 'foo')
+       movie3 = double('Movie', :title => 'Test3', :director => 'foo')
+       allow(Movie).to receive(:similar_movies).with(10).and_return([movie2,movie3])
+       allow(Movie).to receive(:find).with("10").and_return(movie2)
+
+       put :find_similar_movies, {:id => 10}
+       expect(response==200)
+       end
+    end
+    
+    describe 'WHEN DOCUMENT HAS NO DIRECTOR' do
+     it 'find similar_movies' do
+       expect(Movie).to receive(:similar_movies).and_return(nil)
+       expect(Movie).to receive(:find).and_return(nil)
+       expect(@movie).to receive(:title).and_return("aa") 
+       put :find_similar_movies, {:id => "111"}
+       expect(response).to redirect_to(root_path)
+       end
+
+    
     end
 end
