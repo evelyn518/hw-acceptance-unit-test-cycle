@@ -25,6 +25,9 @@ module NavigationHelpers
     when /^the Similar Movies page for "(.+)"/
       movie = Movie.find_by(title: $1)
       similar_movies_path(movie)
+      
+    when /^the new page/ then '/movies/new'
+      
     else
       
     # Add more mappings here.

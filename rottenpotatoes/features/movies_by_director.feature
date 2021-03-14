@@ -32,3 +32,29 @@ Scenario: can't find similar movies if we don't know director (sad path)
   When  I follow "Find Movies With Same Director"
   Then  I should be on the home page
   And   I should see "'Alien' has no director info"
+  
+Scenario: can add movie
+  Given I am on the home page
+  When I follow "Add new movie" 
+  Then I should be on the new page
+  And  I fill in "Director" with "Ridley Scott"
+  And  I fill in "Title" with "test"
+  When I press "Save Changes"
+  Then I should be on the home page
+  
+Scenario: try to add movie then cancel
+  Given I am on the home page
+  When I follow "Add new movie" 
+  Then I should be on the new page
+  When I follow "Cancel"
+  Then I should be on the home page
+  
+  
+Scenario: go to details page then back to index page
+  Given I am on the details page for "Star Wars"
+  When I follow "Back to movie list"
+  Then I should be on the home page
+  
+Scenario: go to details page then back to index page
+  Given I am on the details page for "Star Wars"
+  When I follow "Delete"

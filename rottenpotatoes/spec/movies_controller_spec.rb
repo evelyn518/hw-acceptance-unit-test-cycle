@@ -20,27 +20,28 @@ RSpec.describe MoviesController, :type => :controller do
    end
 
 
-   describe 'WHEN DOCUMENT HAS A DIRECTOR' do
-     it 'find similar_movies' do
-       movie2 = double('Movie', :title => 'Test2', :director => 'foo')
-       movie3 = double('Movie', :title => 'Test3', :director => 'foo')
-       allow(Movie).to receive(:similar_movies).with(10).and_return([movie2,movie3])
-       allow(Movie).to receive(:find).with("10").and_return(movie2)
+   describe 'similar_method' do
+     context 'when the specified movie has a director' do
+       it 'pass similar movies to @movies' do
+           movie2 = double('Movie', :title => 'Test2', :director => 'foo')
+           movie3 = double('Movie', :title => 'Test3', :director => 'foo')
+           allow(Movie).to receive(:similar_movies).with(10).and_return([movie2,movie3])
+           allow(Movie).to receive(:find).with("10").and_return(movie2)
+           put :find_similar_movies, {:id => 10}
+           expect(assigns(:movies)).to contain_exactly(movie2,movie3)
+           expect(assigns(:movie) == movie2)
+           end
+        end
 
-       put :find_similar_movies, {:id => 10}
-       expect(response==200)
+    context 'when the specified movie has no director' do
+       it 'pass nil to to @movies and redirect to homepage' do
+           expect(Movie).to receive(:similar_movies).and_return(nil)
+           expect(Movie).to receive(:find).and_return(nil)
+           expect(@movie).to receive(:title).and_return("aa") 
+           put :find_similar_movies, {:id => "111"}
+           expect(assigns(:movies) == nil)
+           expect(response).to redirect_to(root_path)
        end
     end
-    
-    describe 'WHEN DOCUMENT HAS NO DIRECTOR' do
-     it 'find similar_movies' do
-       expect(Movie).to receive(:similar_movies).and_return(nil)
-       expect(Movie).to receive(:find).and_return(nil)
-       expect(@movie).to receive(:title).and_return("aa") 
-       put :find_similar_movies, {:id => "111"}
-       expect(response).to redirect_to(root_path)
-       end
-
-    
-    end
+end
 end
